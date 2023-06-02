@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>INDEX</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://v2.vuejs.org/js/vue.min.js"></script>
+  <link
+   rel="stylesheet"
+   href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+   />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+ </head>
+ <body>
+  <div id="app" class="container">
+   <h1>Controle de Tarefas</h1>
+   <div class="row">
+    <div class="col form-group">
+     <label for="iptdescricao">Descrição</label>
+     <textarea class="form-control" id="iptdescricao" placeholder="DESCRIÇÃO" v-model="tarefa.descricao"></textarea>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col">
+     <button class="btn btn-info" @click="salvar">Salvar</button>
+     <button class="btn btn-warning" @click="cancelar">Cancelar</button>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col">
+     <table class="table table-hover">
+      <thead>
+       <tr>
+        <th scope="col" style="width: 15%">#</th>
+        <th scope="col" style="width: 65%">Descrição</th>
+        <th></th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr v-for="t in tarefas" :key="t.id" style="cursor: pointer" @click="seleciona(t)">
+        <td>{{t.id}}</td>
+        <td>{{t.descricao}}</td>
+        <td><button class="btn btn-danger" @click="excluir(t.id)">Excluir</button></td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+  <script>
+var vapp = new Vue({
+ el: '#app',
+ data: {
+  url: 'http://localhost:8080/tarefas/',
+  tarefas: [],
+  tarefa: {
+   id: -1,
+   descricao: ''
+  }
+ },
+ mounted() {
+  this.getTarefas();
+ },
+ methods: {
+  getTarefas() {
+   this.cancelar();
+   $.ajax({
+    url: this.url,
+    method: 'GET'
+   }).done((r) => {
+    this.tarefas = r;
+   }).fail((e) => {
+    console.log('ERRO ', e);
+   });
+  },
+  cancelar() {
+   this.tarefa = {
+    id: -1,
+    descricao: ''
+   };
+  },
+  seleciona(t) {
+   this.tarefa = t;
+  },
+  salvar() {
+   let metodo = 'POST';
+   if(this.tarefa.id>0){
+    metodo = 'PUT';
+   }
+   $.ajax({
+    url: this.url,
+    method: metodo,
+    contentType: 'application/json',
+    type: 'json',
+    data: JSON.stringify(this.tarefa)
+   }).done((r) => {
+    this.tarefas = r;
+    this.getTarefas();
+   }).fail((e) => {
+    console.log('ERRO ', e);
+   });
+  },
+  excluir(id) {
+   $.ajax({
+    url: this.url + id,
+    method: 'DELETE'
+   }).done((r) => {
+    this.tarefas = r;
+    this.getTarefas();
+   }).fail((e) => {
+    console.log('ERRO ', e);
+   });
+  }
+ }
+});
+  </script>
+ </body>
+</html>
